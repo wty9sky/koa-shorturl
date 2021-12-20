@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title><%=global.config.web.title%></title>
+    <link rel="icon" href="./static/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    <!-- 导入 Vue 3 -->
+    <script src="//unpkg.com/vue@next"></script>
+    <!-- 导入组件库 -->
+    <script src="//unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+    <div class="" id="app">
+        <div style="width: 600px;margin: 0 auto;margin-top: 100px;display:flex;flex-flow: row nowrap;">
+            <el-input v-model="url" placeholder="输入要生成短网址的链接" style="width: 450px;">
+                <!-- <template #prepend>https://<%=global.config.indexUrl%>/</template> -->
+            </el-input>
+            <el-button type="primary" style="width: 120px;margin-left: 50px;" @click="addurl">生成短网址</el-button>
+
+        </div>
+        <div v-show="show" style="color: #999999;text-align: center;margin-top:30px;">
+            <span style="display: block;">长链接：{{result.url}}</span>
+            <span style="display: block;">生成的短网址：https://<%=global.config.indexUrl%>/{{result.code}}</span>
+        </div>
+    </div>
+    <script>
+        const {
+            ref
+        } = Vue
+        const App = {
+            setup() {
+                const url = ref(null)
+                const show = ref(false)
+                const result = ref({
+                    url:'',
+                    code:''
+                })
+                const addurl = () => {
+                    if (url.value) {
+                        axios.post('/add/url', {
+                                url: url.value
+                            })
+                            .then((res) => {
+                                if (res.data.errCode === 0) {
+                                    ElementPlus.ElMessageBox.alert('生成成功', '生成短网址', {
+                                        confirmButtonText: '确定',
+                                        callback: () => {
+                                            result.value = Object.assign({},res.data.data)
+                                            show.value = true
+                                        }
+                                    })
+                                } else {
+                                    ElementPlus.ElMessageBox.alert(res.data.msg, '生成短网址', {
+                                        confirmButtonText: '确定'
+                                    })
+                                }
+
+                            })
+                            .catch(function (error) {
+                                // handle error
+                                console.log(error, 2);
+                            })
+                    } else {
+                        ElementPlus.ElMessageBox.alert('请输入链接', '生成短网址', {
+                            confirmButtonText: '确定'
+                        })
+                    }
+                }
+                return {
+                    url,
+                    addurl,
+                    result,
+                    show
+                }
+            }
+        }
+        const app = Vue.createApp(App)
+        app.use(ElementPlus).mount("#app")
+    </script>
+
+</body>
+
+</html>
